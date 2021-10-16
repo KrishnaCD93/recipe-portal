@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
 import wavePortal from './utils/WavePortal.json'
-import Form from './Form'
 
 const App = () => {
   // A state variable we use to store our user's public wallet.
@@ -14,8 +13,12 @@ const App = () => {
   // All state property to store all waves
   const[allWaves, setAllWaves] = useState([]);
 
+  // Form values
+  const [dishValue, setDishValue] = useState("");
+  const [recipeValue, setRecipeValue] = useState("");
+
   // Create a variable that holds the contract address after deployment
-  const contractAddress = "0x745b94839b8667e527738Ed9Ff726aDa7DE1DCdd";
+  const contractAddress = "0x50250Df8D53006cBba90D2f6290d0AffAe3FC43D";
 
   const checkIfWalletIsConnected = async () => {
     // Make sure we have access to window.ethereum
@@ -74,7 +77,7 @@ const App = () => {
         let count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
 
-        const waveTxn = await wavePortalContract.wave("Hello");
+        const waveTxn = await wavePortalContract.wave(dishValue, recipeValue, {gasLimit:300000});
         console.log("Mining...", waveTxn.hash);
 
         await waveTxn.wait();
@@ -110,7 +113,8 @@ const App = () => {
             wavesCleaned.push({
               address: wave.waver,
               timestamp: new Date(wave.timestamp*1000),
-              message: wave.message
+              dish: wave.dish,
+              recipe: wave.recipe
             });
         });
 
@@ -142,11 +146,29 @@ const App = () => {
 
         <div className="bio">
         <p>I'm Krishna and I'm looking for new recipes!  <br></br>
-        Connect your wallet, send a wave, and save your favourite recipes on the blockchain for a chance to win some ether! 
-        You can paste a link or the whole recipe! <br></br>
-        {waveCount>0?'There are now '+waveCount+' recipes on this site.':' '}</p>
+        Connect your wallet, send a wave, and save your favourite dishes on the blockchain for a chance to win some ether! 
+        You can paste a link or the whole recipe! What's your special tip to make the dish delicious? <br></br>
+        {waveCount>0?'Thank You! There are now '+waveCount+' recipes on this site.':' '}</p>
         </div>
 
+        {
+          currentAccount ? (<textarea name='dish'
+          placeholder="Name of the dish"
+          type="text"
+          id="dish"
+          value={dishValue}
+          onChange={e => setDishValue(e.target.value)}
+          />) : null
+        }
+        {
+          currentAccount ? (<textarea name='recipe'
+          placeholder="The secret sauce"
+          type="text"
+          id="recipe"
+          value={recipeValue}
+          onChange={e => setRecipeValue(e.target.value)}
+          />) : null
+        }
         <button className="waveButton" onClick={wave}>
           Wave at Me
         </button>
@@ -159,13 +181,13 @@ const App = () => {
           </button>
         )}
 
-        <Form />
         {allWaves.map((wave, index) => {
           return (
             <div key={index} style={{ backgroundColor: "OldLace", marginTop:"16px", padding: "8px"}}>
               <div>Address: {wave.address}</div>
               <div>Time: {wave.timestamp.toString()}</div>
-              <div>Message: {wave.message}</div>
+              <div>Dish: {wave.dish}</div>
+              <div>Recipe: {wave.recipe}</div>
             </div>)
         })}
       </div>
