@@ -18,7 +18,7 @@ const App = () => {
   const [recipeValue, setRecipeValue] = useState("");
 
   // Create a variable that holds the contract address after deployment
-  const contractAddress = "0x50250Df8D53006cBba90D2f6290d0AffAe3FC43D";
+  const contractAddress = "0xA3e66196c17AD666E2EaF274851Cb09179FdcA0C";
 
   const checkIfWalletIsConnected = async () => {
     // Make sure we have access to window.ethereum
@@ -68,7 +68,7 @@ const App = () => {
   const wave = async () => {
     try {
       const { ethereum } = window;
-
+      waveCount = 0;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
@@ -79,9 +79,10 @@ const App = () => {
 
         const waveTxn = await wavePortalContract.wave(dishValue, recipeValue, {gasLimit:300000});
         console.log("Mining...", waveTxn.hash);
-
+        alert("Mining...Please Wait.")
         await waveTxn.wait();
         console.log("Mined -- ", waveTxn.hash);
+        alert("Added to the blockchain!")
 
         count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
@@ -117,6 +118,18 @@ const App = () => {
               recipe: wave.recipe
             });
         });
+
+        // Listen in for emitter events.
+        wavePortalContract.on("NewWave", (from, timestamp, dish, recipe) => {
+          console.log("NewWave", from, timestamp, dish, recipe);
+
+          setAllWaves(prevState => [...prevState, {
+            address: from,
+            timestamp: new Date(timestamp * 1000),
+            dish: dish,
+            recipe: recipe
+          }]);
+        })
 
         // Store the data in React State
         setAllWaves(wavesCleaned);
