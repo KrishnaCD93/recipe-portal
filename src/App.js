@@ -188,9 +188,11 @@ const App = () => {
           onChange={e => setRecipeValue(e.target.value)}
           />) : null
         }
-        <button className="waveButton" onClick={wave}>
+        {
+          currentAccount ? (<button className="waveButton" onClick={wave}>
           Wave at Me
-        </button>
+        </button>) : null
+        }
 
         {// If there is no current account render this button
         }
