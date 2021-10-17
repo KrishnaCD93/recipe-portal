@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import './App.css';
-import wavePortal from './utils/WavePortal.json'
+import wavePortal from './utils/WavePortal.json';
 
 const App = () => {
   // A state variable we use to store our user's public wallet.
@@ -17,8 +17,11 @@ const App = () => {
   const [dishValue, setDishValue] = useState("");
   const [recipeValue, setRecipeValue] = useState("");
 
+  // Get random number to see if user won ether
+  let [randomNumber, setRandomNumber] = useState(0);
+
   // Create a variable that holds the contract address after deployment
-  const contractAddress = "0xA3e66196c17AD666E2EaF274851Cb09179FdcA0C";
+  const contractAddress = "0x010731E126A6b37a1a915edb79D5F2c333979AB1";
 
   const checkIfWalletIsConnected = async () => {
     // Make sure we have access to window.ethereum
@@ -69,6 +72,7 @@ const App = () => {
     try {
       const { ethereum } = window;
       waveCount = 0;
+      randomNumber = 0;
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
@@ -83,10 +87,11 @@ const App = () => {
         await waveTxn.wait();
         console.log("Mined -- ", waveTxn.hash);
         alert("Added to the blockchain!")
-
+        const ranNum = await wavePortalContract.getRandomNumber();
         count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
 
+        setRandomNumber(randomNumber + ranNum.toNumber());
         setCount(waveCount + count)
       } else {
         console.log("Ethereum object doesn't exist!");
@@ -159,9 +164,10 @@ const App = () => {
 
         <div className="bio">
         <p>I'm Krishna and I'm looking for new recipes!  <br></br>
-        Connect your wallet, send a wave, and save your favourite dishes on the blockchain for a chance to win some ether! 
-        You can paste a link or the whole recipe! What's your special tip to make the dish delicious? <br></br>
-        {waveCount>0?'Thank You! There are now '+waveCount+' recipes on this site.':' '}</p>
+        Connect your wallet, send a wave, and save your favourite dishes on the blockchain for a 15% chance to win some ether! 
+        You can paste a link or the whole recipe! What's your special tip to make the recipe delicious? <br></br>
+        {waveCount>0?'Thank You! There are now '+waveCount+' recipes on this site.':null}
+        <br></br>{(randomNumber>0 & randomNumber<15)?'Congratulations! You won 0.0015 ether!':null}</p>
         </div>
 
         {
@@ -196,11 +202,11 @@ const App = () => {
 
         {allWaves.map((wave, index) => {
           return (
-            <div key={index} style={{ backgroundColor: "OldLace", marginTop:"16px", padding: "8px"}}>
-              <div>Address: {wave.address}</div>
-              <div>Time: {wave.timestamp.toString()}</div>
+            <div key={index} style={{ backgroundColor: "coral", marginTop:"16px", padding: "8px", borderRadius: "4px"}}>
               <div>Dish: {wave.dish}</div>
               <div>Recipe: {wave.recipe}</div>
+              <div>Sender: {wave.address}</div>
+              <div>Time: {wave.timestamp.toString()}</div>
             </div>)
         })}
       </div>
